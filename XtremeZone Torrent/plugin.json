@@ -1,0 +1,12 @@
+{
+    "ID":"5C0BFEC0DF7011E695980800200C9A68",
+    "ActionKeyword":"myxz",
+    "Name":"ExtremeZone Torrent",
+    "Description":"Search ExtremeZone torrents in Wox",
+    "Author":"Dragos Suteu",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"",
+    "ExecuteFileName":"XtremeZone.Torrent.dll",
+    "IcoPath":"icon.png"
+}
