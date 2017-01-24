@@ -45,7 +45,7 @@ namespace FileList_Torrent {
 
             sReader = new StreamReader( response.GetResponseStream() );
 
-            if (response.ResponseUri.AbsolutePath.Contains( "my.php" )) {
+            if ( response.ResponseUri.AbsolutePath.Contains( "my.php" ) ) {
                 loggedIn = true;
             } else {
                 loggedIn = false;
@@ -73,7 +73,7 @@ namespace FileList_Torrent {
 
             List<Torrent> torrents = new List<Torrent>();
             var torrentrows = doc.QuerySelectorAll( "tr.browse" );
-            foreach (HtmlNode torrentrow in torrentrows) {
+            foreach ( HtmlNode torrentrow in torrentrows ) {
                 torrents.Add( new Torrent {
                     title = torrentrow.QuerySelector( ":nth-child(2) b" ).InnerText,
                     size = torrentrow.QuerySelector( ":nth-child(6)" ).InnerText,
@@ -105,7 +105,7 @@ namespace FileList_Torrent {
             string strHTML = sReader.ReadToEnd();
             System.IO.File.WriteAllText( @"C:\Users\rmxsh\Downloads\" + title + ".torrent", strHTML, Encoding.Default );
             //Console.Write( strHTML );
-            using (Stream output = File.OpenWrite( @"C:\Users\rmxsh\Downloads\" + title + ".torrent" ))
+            using ( Stream output = File.OpenWrite( @"C:\Users\rmxsh\Downloads\" + title + ".torrent" ) )
                 ( sReader.BaseStream ).CopyTo( output );
 
         }
@@ -130,10 +130,10 @@ namespace FileList_Torrent {
 
         public List<Result> Query ( Query query ) {
             List<Result> result = new List<Result>();
-            if (loggedIn) {
+            if ( loggedIn ) {
                 List<Torrent> torrents = TorrentSearch( query.Search );
 
-                foreach (Torrent torrent in torrents) {
+                foreach ( Torrent torrent in torrents ) {
                     result.Add( new Result() {
                         Title = torrent.title,
                         SubTitle = String.Format( "Seeders: {0} |      Peers: {1} |     Size: {2} |       Date:{3}", torrent.seed.PadRight( 10 ), torrent.peer.PadRight( 10 ), torrent.size.PadRight( 15 ), torrent.date ),
