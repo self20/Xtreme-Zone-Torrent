@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 namespace FileList_Torrent {
     public class Torrent {
 
+        public string icon {
+            get; set;
+        }
+
         public string cat {
             get; set;
         }

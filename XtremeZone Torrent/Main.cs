@@ -22,6 +22,8 @@ namespace FileList_Torrent {
         HttpWebResponse response;
         StreamReader sReader;
         bool loggedIn;
+        static string pathUser = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
+        string pathDownload = Path.Combine( pathUser, "Downloads\\" );
 
         public void login ( string username, string password ) {
 
@@ -75,6 +77,7 @@ namespace FileList_Torrent {
             var torrentrows = doc.QuerySelectorAll( "tr.browse" );
             foreach ( HtmlNode torrentrow in torrentrows ) {
                 torrents.Add( new Torrent {
+                    icon = torrentrow.QuerySelector( ":nth-child(1) img" ).GetAttributeValue( "class", "icon" )+".png",
                     title = torrentrow.QuerySelector( ":nth-child(2) b" ).InnerText,
                     size = torrentrow.QuerySelector( ":nth-child(6)" ).InnerText,
                     path = "http://myxz.org/" + torrentrow.QuerySelector( ":nth-child(3) a:last-child" ).GetAttributeValue( "href", "" ),
@@ -103,9 +106,9 @@ namespace FileList_Torrent {
             response = (HttpWebResponse)wr.GetResponse();
             sReader = new StreamReader( response.GetResponseStream(), Encoding.Default );
             string strHTML = sReader.ReadToEnd();
-            System.IO.File.WriteAllText( @"C:\Users\rmxsh\Downloads\" + title + ".torrent", strHTML, Encoding.Default );
+            System.IO.File.WriteAllText( pathDownload + title + ".torrent", strHTML, Encoding.Default );
             //Console.Write( strHTML );
-            using ( Stream output = File.OpenWrite( @"C:\Users\rmxsh\Downloads\" + title + ".torrent" ) )
+            using ( Stream output = File.OpenWrite( pathDownload + title + ".torrent" ) )
                 ( sReader.BaseStream ).CopyTo( output );
 
         }
@@ -137,13 +140,13 @@ namespace FileList_Torrent {
                     result.Add( new Result() {
                         Title = torrent.title,
                         SubTitle = String.Format( "Seeders: {0} |      Peers: {1} |     Size: {2} |       Date:{3}", torrent.seed.PadRight( 10 ), torrent.peer.PadRight( 10 ), torrent.size.PadRight( 15 ), torrent.date ),
-                        IcoPath = "icon.png",
+                        IcoPath = "icons\\"+torrent.icon,
                         Action = e => {
                             Download( torrent.path, torrent.title );
                             string pathUser = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
                             string pathDownload = Path.Combine( pathUser, "Downloads\\" );
                             System.Diagnostics.Process.Start( pathDownload + torrent.title + ".torrent" );
-                            return false;
+                            return true;
                         }
                     } );
                 }
