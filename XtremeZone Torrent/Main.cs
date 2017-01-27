@@ -22,6 +22,7 @@ namespace FileList_Torrent {
         HttpWebResponse response;
         StreamReader sReader;
         bool loggedIn;
+        bool noInternet = false;
         static string pathUser = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
         string pathDownload = Path.Combine( pathUser, "Downloads\\" );
 
@@ -127,40 +128,52 @@ namespace FileList_Torrent {
             XmlNode username = doc.DocumentElement.SelectSingleNode( "/login/username" );
             XmlNode password = doc.DocumentElement.SelectSingleNode( "/login/password" );
 
-            login( username.InnerText, password.InnerText );
+            try {
+                login( username.InnerText, password.InnerText );
+            }catch(WebException e ) {
+                noInternet = true;
+            }
         }
 
 
         public List<Result> Query ( Query query ) {
             List<Result> result = new List<Result>();
-            if ( loggedIn ) {
-                List<Torrent> torrents = TorrentSearch( query.Search );
+            if ( !noInternet ) {
+                if ( loggedIn ) {
+                    List<Torrent> torrents = TorrentSearch( query.Search );
 
-                foreach ( Torrent torrent in torrents ) {
+                    foreach ( Torrent torrent in torrents ) {
+                        result.Add( new Result() {
+                            Title = torrent.title,
+                            SubTitle = String.Format( "Seeders: {0} |      Peers: {1} |     Size: {2} |       Date:{3}", torrent.seed.PadRight( 10 ), torrent.peer.PadRight( 10 ), torrent.size.PadRight( 15 ), torrent.date ),
+                            IcoPath = "icons\\" + torrent.icon,
+                            Action = e => {
+                                Download( torrent.path, torrent.title );
+                                string pathUser = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
+                                string pathDownload = Path.Combine( pathUser, "Downloads\\" );
+                                System.Diagnostics.Process.Start( pathDownload + torrent.title + ".torrent" );
+                                return true;
+                            }
+                        } );
+                    }
+                } else {
                     result.Add( new Result() {
-                        Title = torrent.title,
-                        SubTitle = String.Format( "Seeders: {0} |      Peers: {1} |     Size: {2} |       Date:{3}", torrent.seed.PadRight( 10 ), torrent.peer.PadRight( 10 ), torrent.size.PadRight( 15 ), torrent.date ),
-                        IcoPath = "icons\\"+torrent.icon,
+                        Title = "Incorrect Username or Password",
+                        SubTitle = "Click to edit",
+                        IcoPath = "icon.png",
                         Action = e => {
-                            Download( torrent.path, torrent.title );
-                            string pathUser = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
-                            string pathDownload = Path.Combine( pathUser, "Downloads\\" );
-                            System.Diagnostics.Process.Start( pathDownload + torrent.title + ".torrent" );
+                            string assemblyFolder = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
+                            string xmlFileName = Path.Combine( assemblyFolder, "login.xml" );
+                            Process.Start( xmlFileName );
                             return true;
                         }
                     } );
                 }
             } else {
                 result.Add( new Result() {
-                    Title = "Incorrect Username or Password",
-                    SubTitle = "Click to edit",
+                    Title = "No Internet Access",
+                    SubTitle = "Reconnect and restart Wox, for this plugin to work!",
                     IcoPath = "icon.png",
-                    Action = e => {
-                        string assemblyFolder = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
-                        string xmlFileName = Path.Combine( assemblyFolder, "login.xml" );
-                        Process.Start( xmlFileName );
-                        return true;
-                    }
                 } );
             }
 
