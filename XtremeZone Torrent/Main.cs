@@ -138,8 +138,14 @@ namespace FileList_Torrent {
 
         public List<Result> Query ( Query query ) {
             List<Result> result = new List<Result>();
+            string assemblyFolder = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
+            string xmlFileName = Path.Combine( assemblyFolder, "login.xml" );
+            XmlDocument doc = new XmlDocument();
+
             if ( !noInternet ) {
+
                 if ( loggedIn ) {
+
                     List<Torrent> torrents = TorrentSearch( query.Search );
 
                     foreach ( Torrent torrent in torrents ) {
@@ -158,13 +164,15 @@ namespace FileList_Torrent {
                     }
                 } else {
                     result.Add( new Result() {
-                        Title = "Incorrect Username or Password",
-                        SubTitle = "Click to edit",
+                        Title = "The credentials are: " + query.Search,
+                        SubTitle = "Click to apply",
                         IcoPath = "icon.png",
                         Action = e => {
-                            string assemblyFolder = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
-                            string xmlFileName = Path.Combine( assemblyFolder, "login.xml" );
-                            Process.Start( xmlFileName );
+                            doc.Load( xmlFileName );
+                            doc.DocumentElement.SelectSingleNode( "/login/username" ).InnerText = query.Terms[1];
+                            doc.DocumentElement.SelectSingleNode( "/login/password" ).InnerText = query.Terms[2];
+                            doc.Save( xmlFileName );
+                            _context.API.RestarApp();
                             return true;
                         }
                     } );
